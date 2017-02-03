@@ -41,13 +41,14 @@ def check_elementwise_sum_with_shape(shape, n):
 
 def test_elementwise_sum():
     np.random.seed(0)
-    nrepeat = 2
-    maxdim = 4
+    nrepeat = 1
+    maxdim = 2
     for repeat in range(nrepeat):
         for dim in range(1, maxdim):
             shape = tuple(np.random.randint(1, int(1000**(1.0/dim)), size=dim))
+            print(shape)
             check_elementwise_sum_with_shape(shape, np.random.randint(1, 8))
-
+    print('success!')
 
 def check_concat_with_shape(shapes, dimension, skip_second):
     # if skip_second is True, second argument will not have gradient.
@@ -2193,7 +2194,70 @@ def test_index2d():
         r = mx.nd.batch_take(data, x)
         assert_almost_equal(r.asnumpy(), data.asnumpy()[np.arange(n), x.asnumpy()])
 
+'''        
+def test_countsketch():
+    print('test:')
+    shape = (3,2)
+    grad_req='write'
+   
+    print("fft input:")
+    init = [np.random.normal(size=shape, scale=1.0)]
+    print(init)
+    
+    sym = mx.sym.CountSketch(name='countsketch') 
+    ctx_list = [{'ctx': mx.cpu(),'in_data': (3,20), 'h_data':(3,20), 's_data': (3,20),'type_dict': {'fft_data': np.float32}}]
+    exe_list = [sym.simple_bind(grad_req=grad_req, **ctx) for ctx in ctx_list]
+   
+
+    for exe in exe_list:
+    for arr, iarr in zip(exe.arg_arrays, init):
+        arr[:] = iarr.astype(arr.dtype)
+        
+    output_names = sym[0].list_outputs()
+    arg_names = sym[0].list_arguments()
+    exe_list = []
+    for s, ctx in zip(sym, ctx_list):
+        assert s.list_arguments() == arg_names
+        assert s.list_outputs() == output_names
+        exe_list.append(s.simple_bind(grad_req=grad_req, **ctx))
+
+    arg_params = {} if arg_params is None else arg_params
+    aux_params = {} if aux_params is None else aux_params
+    for n, arr in exe_list[0].arg_dict.items():
+        if n not in arg_params:
+            arg_params[n] = np.random.normal(size=arr.shape, scale=scale)
+    for n, arr in exe_list[0].aux_dict.items():
+        if n not in aux_params:
+            aux_params[n] = 0
+    for exe in exe_list:
+        for name, arr in exe.arg_dict.items():
+            arr[:] = arg_params[name]
+        for name, arr in exe.aux_dict.items():
+            arr[:] = aux_params[name]
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        
+#forward predict
+for exe in exe_list:
+    exe.forward(is_train=False)
+
+outputs = [exe.outputs[0].asnumpy() for exe in exe_list]
+   
+print('fft output')
+print(outputs)
+'''
+        
 if __name__ == '__main__':
+    test_elementwise_sum()
+    exit(0)
     test_clip()
     test_index2d()
     test_scalarop()
