@@ -14,26 +14,31 @@ del test_support_vector_machine_l1_svm
 del test_support_vector_machine_l2_svm
 
 
-
+################ FFT #######################
 print('test:')
 #shape = (2,4,3,2)
 shape = (3,2)
 grad_req='write'
-   
 print("fft input:")
 init = [np.random.normal(size=shape, scale=1.0)]
 print(init)
     
 sym = mx.sym.FFT(name='fft', compute_size = 128) 
+
+arr_grad = [mx.nd.empty((3,4))]
+
 ctx_list = [{'ctx': mx.gpu(0),'fft_data': shape, 'type_dict': {'fft_data': np.float32}}]
-exe_list = [sym.simple_bind(grad_req=grad_req, **ctx) for ctx in ctx_list]
-   
+#exe_list = [sym.simple_bind(grad_req=grad_req, args_grad=arr_grad,**ctx) for ctx in ctx_list]
+exe_list = [sym.simple_bind(args_grad=arr_grad,**ctx) for ctx in ctx_list]
+
+#print(arr_grad[0].asnumpy())
+
 for exe in exe_list:
-    print(exe.arg_arrays)
+    #print(exe.arg_arrays)
     for arr, iarr in zip(exe.arg_arrays, init):
-        print(arr)
+        #print(arr)
         arr[:] = iarr.astype(arr.dtype)
-        
+       
 #forward predict
 for exe in exe_list:
     exe.forward(is_train=False)
@@ -47,7 +52,20 @@ desire_out = np.fft.fft(init, n=None, axis=-1, norm=None)
 print('fft desired output')
 print(desire_out)
 
+###### Backward #########
+########backward:take the out_grad and do ifft 
+out_grad = mx.nd.empty((shape[0],2*shape[1]))
+ttemp = np.random.normal(-3, 3, (shape[0],2*shape[1]))
+out_grad[:] = ttemp
 
+for exe in exe_list:
+    exe.backward([out_grad])  
+    #print(dir(exe))
+    outputs_back = exe.grad_arrays[0].asnumpy()
+    print(outputs_back)
+
+
+############# IFFT ######################
 print("ifft input:")
 init = outputs
 print(outputs)
@@ -69,11 +87,23 @@ for exe in exe_list:
 outputs = [exe.outputs[0].asnumpy()/shape[1] for exe in exe_list]
     
 print('ifft Output')
-print(outputs
+print(outputs)
 
 desire_out = np.fft.ifft(desire_out, n=None, axis=-1, norm=None)
 print('ifft desired output')
 print(desire_out)
+
+###### Backward #########
+########backward:take the out_grad and do fft 
+out_grad = mx.nd.empty((shape[0],shape[1]))
+ttemp = np.random.normal(-3, 3, (shape[0],shape[1]))
+out_grad[:] = ttemp
+
+for exe in exe_list:
+    exe.backward([out_grad])  
+    #print(dir(exe))
+    outputs_back = exe.grad_arrays[0].asnumpy()
+    print(outputs_back)
 
 
 

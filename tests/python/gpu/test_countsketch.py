@@ -17,12 +17,12 @@ del test_support_vector_machine_l2_svm
 
 
 print('start')
-out_dim = 6
+out_dim = 3
 sym = mx.sym.CountSketch(name='countsketch',out_dim = out_dim) 
 ctx_list = [{'ctx':mx.gpu(0)}]
 
 batch_size = 10
-n = 803   #number of count sketch
+n = 803  #number of count sketch
 in_dim = 20   #input dimension
 assert(in_dim > out_dim)
 shape = [(n,in_dim), (1,in_dim),(1,in_dim)]     #shape of input x, hash h and hash s
@@ -57,5 +57,17 @@ print(reldiff(gt, outputs) )
 assert(reldiff(gt, outputs) < 1e-6 )
 print('success!')
 
-
-
+######### Backward test ###############
+out_grad = mx.nd.empty((n,out_dim))
+out_grad[:] = np.random.normal(-3, 3, (n,out_dim))
+for exe in exe_list:
+    exe.backward([out_grad])  
+outputs_back = arr_grad[0].asnumpy()
+    
+gt_back = np.zeros((n,in_dim))
+for j in np.arange(0,n):
+    for i in np.arange(0,in_dim):
+        gt_back[j,i] = out_grad.asnumpy()[j, h[0,i]] * s[0,i]
+print(reldiff(gt_back, outputs_back) )
+assert(reldiff(gt_back, outputs_back) < 1e-6 )
+print('success!')

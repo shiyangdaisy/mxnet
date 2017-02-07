@@ -67,8 +67,8 @@ template <typename DType>
 __global__ void sketch_backward_kernel(const int nthreads, DType *in_grad, const DType *h,
 					const DType *s, const DType *out_grad, const int n_smaples, 
 					const int in_dim, const int out_dim) {
-	// input: n_smaples * in_dim 
-	// output: n_smaples * out_dim
+	// only calculate gradient regarding x
+    // can also calculate gradient regarding s if needed
 	const int index = blockIdx.x * blockDim.x + threadIdx.x;
 	const int i_indim = index % in_dim;
 	const int i_sample = index / in_dim;
@@ -128,21 +128,27 @@ inline void CountSketchBackward(Tensor<gpu, 2, DType> &in_grad,
 	const DType *out_grad_ptr = out_grad.dptr_;
 	const DType *h_ptr = h.dptr_;
 	const DType *s_ptr = s.dptr_;
-
-  int upper_bound = n_samples-processing_batch_size;
-  // guarantee there are at least one iteration
-  upper_bound = upper_bound>0? upper_bound:0;
-	for ( int bstart = 0; bstart <= upper_bound; bstart += processing_batch_size) {
-		const int batchlen = min(processing_batch_size, n_samples - bstart);
+    
+    int upper_bound = n_samples/processing_batch_size;
+    if (n_samples%processing_batch_size == 0){
+        upper_bound = upper_bound-1;
+    }
+ 
+// guarantee there are at least one iteration
+    upper_bound = upper_bound>0? upper_bound:0;
+    int bstart = 0;
+	for ( int i = 0; i <= upper_bound; i++ ){
+	    const int batchlen = min(processing_batch_size, n_samples - bstart);
 
 		const int nthreads = batchlen * in_dim;
 		const int threads_per_block = min(THREADS_PER_BLOCK, nthreads);// to make number of threads the same as input 
-		int nblocks = (nthreads - threads_per_block + 1) / threads_per_block+1;
-		
+		int nblocks = (nthreads + threads_per_block - 1) / threads_per_block ;
+        
 		cuda::sketch_backward_kernel<DType><<<nblocks, threads_per_block>>>(
 									nthreads, in_grad_ptr+bstart*in_dim, h_ptr,
 					        s_ptr, out_grad_ptr+bstart*out_dim, batchlen, 
 					        in_dim, out_dim);
+        bstart = (i+1)*batchlen;
 	}
 }
 }

@@ -141,6 +141,12 @@ public:
     Tensor<xpu, 2, DType> grad = out_grad[fft::kOutComplex].get_with_shape<xpu, 2, DType>(
           Shape2(n_ffts, dim_*2), s);
 
+      
+      
+    std::cout << "Hello" << std::endl;
+      
+      
+      
     // need temp space to pad the data into complex numbers due to cufft interface
     Tensor<xpu, 1, DType> workspace = 
             ctx.requested[fft::kTempSpace].get_space_typed<xpu, 1, DType>(
