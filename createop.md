@@ -1,10 +1,12 @@
-## Synopsis
+## Example of creating an operator in C++ platform
+Let's take fft for example.
+## First of all
 
-At the top of the file there should be a short introduction and/ or overview that explains **what** the project is. This description should match descriptions added for package managers (Gemspec, package.json, etc.)
+You need to create fft.h, fft.cc, and fft.cu three files. fft.h is the head file. fft.cc and fft.cu include functions you need for running on CPU and GPU repectively.
 
-## Code Example
+### fft.h 
 
-Show what the library does as concisely as possible, developers should be able to figure out **how** your project solves their problem by looking at the code example. Make sure the API you are showing off is obvious, and that your code is short and concise.
+Define operator class:
 
 ## Motivation
 
