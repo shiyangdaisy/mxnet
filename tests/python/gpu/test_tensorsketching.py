@@ -50,6 +50,7 @@ shape = [in_shape, hash_shape, hash_shape]
 
 #    TS(X1)
 print('TS(X1):')
+
 sym = mx.sym.CountSketch(name='countsketch',out_dim = out_dim) 
 
 arr = [mx.nd.empty(shape[i]) for i in range(3)]
@@ -61,7 +62,7 @@ arr[2][:] = s                           #hash s
 exe = sym.bind(mx.gpu(0), arr, arr_grad)
 exe.forward(is_train=False)
 output1 = exe.outputs[0].asnumpy()
-
+print('TS(X1) successed')
 
 #    TS(X2)
 print('TS(X2):')
@@ -76,6 +77,7 @@ arr[2][:] = s                           #hash s
 exe = sym.bind(mx.gpu(0), arr, arr_grad)
 exe.forward(is_train=False)
 output2 = exe.outputs[0].asnumpy()
+print('TS(X2) successed')
 
 
 
@@ -94,6 +96,7 @@ for arr, iarr in zip(exe.arg_arrays, [output1]):
 
 exe.forward(is_train=False)
 fft_output1 = exe.outputs[0]
+print('FFT(TS(X1)) successed')
 
 #    FFT(TS(X2))   
 sym = mx.sym.FFT(name='fft', compute_size = 128) 
@@ -105,6 +108,7 @@ for arr, iarr in zip(exe.arg_arrays, [output2]):
       
 exe.forward(is_train=False)
 fft_output2 = exe.outputs[0]
+print('FFT(TS(X2)) successed')
 
 #Elementwise multiplication
 a = mx.sym.Variable('a')
@@ -115,9 +119,10 @@ y = c.bind(default_context(), args={'a': fft_output1, 'b' : fft_output2})
 y.forward()
 temp_Y = y.outputs[0].asnumpy()
 
+print('elementwise multiplication successed')
 
-print('temp_Y')
-print(temp_Y)
+#print('temp_Y')
+#print(temp_Y)
 assert(temp_Y.shape == (fft_shape[0],2*fft_shape[1]))
 #    IFFT()
 ifft_shape = temp_Y.shape
@@ -131,5 +136,6 @@ for arr, iarr in zip(exe.arg_arrays, [temp_Y]):
       
 exe.forward(is_train=False)
 Y = exe.outputs[0].asnumpy()/fft_shape[1]
-print('Y')
-print(Y)
+#print('Y')
+#print(Y)
+print('IFFT successed')
