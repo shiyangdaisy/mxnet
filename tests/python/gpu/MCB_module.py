@@ -18,6 +18,18 @@ def MCB_unit(data1,data2,N,in_dim,out_dim,IFFT=True):
 #for resnet: N = length*height*batch_size, in_dim = number of filters
 #output Y: flattened tensor, size N by out_dim (real numbers)
 
+
+
+
+
+    
+    
+'''    
+def MCB_unit(data1,data2,N,in_dim,out_dim,IFFT=True):
+#input data1,data2: flattened tensor,np.ndarray type, size N by in_dim
+#for resnet: N = length*height*batch_size, in_dim = number of filters
+#output Y: flattened tensor, size N by out_dim (real numbers)
+
     assert(in_dim > out_dim)
     in_shape = (N,in_dim)
     hash_shape = (1, in_dim)
@@ -97,7 +109,7 @@ def MCB_unit(data1,data2,N,in_dim,out_dim,IFFT=True):
     else:
         return temp_Y[:,0::2]
 
-
+'''
 
 
 

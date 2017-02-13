@@ -34,11 +34,13 @@ Output: Y \in R^{N \times d} = TS(<X1,X2>)
 '''
 
 N = 5
+H = 3
+W = 3
 in_dim = 20
 out_dim = 6
 assert(in_dim > out_dim)
 
-in_shape = (N, in_dim)
+in_shape = (N, H,W,in_dim)
 hash_shape = (1, in_dim)
 
 X1 = np.random.uniform(-10, 10, in_shape)
@@ -62,6 +64,8 @@ arr[2][:] = s                           #hash s
 exe = sym.bind(mx.gpu(0), arr, arr_grad)
 exe.forward(is_train=False)
 output1 = exe.outputs[0].asnumpy()
+#print(output1)
+print(output1.shape)
 print('TS(X1) successed')
 
 #    TS(X2)
@@ -97,6 +101,8 @@ for arr, iarr in zip(exe.arg_arrays, [output1]):
 exe.forward(is_train=False)
 fft_output1 = exe.outputs[0]
 print('FFT(TS(X1)) successed')
+print(fft_output1.asnumpy())
+print(fft_output1.asnumpy().shape)
 
 #    FFT(TS(X2))   
 sym = mx.sym.FFT(name='fft', compute_size = 128) 
@@ -123,7 +129,7 @@ print('elementwise multiplication successed')
 
 #print('temp_Y')
 #print(temp_Y)
-assert(temp_Y.shape == (fft_shape[0],2*fft_shape[1]))
+#assert(temp_Y.shape == (fft_shape[0],2*fft_shape[1]))
 #    IFFT()
 ifft_shape = temp_Y.shape
 
@@ -135,7 +141,9 @@ for arr, iarr in zip(exe.arg_arrays, [temp_Y]):
     arr[:] = iarr.astype(arr.dtype)
       
 exe.forward(is_train=False)
-Y = exe.outputs[0].asnumpy()/fft_shape[1]
+#Y = exe.outputs[0].asnumpy()/fft_shape[1]
+Y = exe.outputs[0].asnumpy()
 #print('Y')
-#print(Y)
+print(Y)
+print(Y.shape)
 print('IFFT successed')
