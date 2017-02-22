@@ -141,7 +141,7 @@ class BaseModule(object):
         """A convenient function that calls both `forward` and `backward`.
         """
         self.forward(data_batch, is_train=True)
-        self.backward()
+        #self.backward()
 
     def score(self, eval_data, eval_metric, num_batch=None, batch_end_callback=None,
               score_end_callback=None,
@@ -408,8 +408,8 @@ class BaseModule(object):
                 if monitor is not None:
                     monitor.tic()
                 self.forward_backward(data_batch)
-                self.update()
-                self.update_metric(eval_metric, data_batch.label)
+                #self.update()
+                #self.update_metric(eval_metric, data_batch.label)
 
                 if monitor is not None:
                     monitor.toc_print()
